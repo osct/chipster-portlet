@@ -1,0 +1,103 @@
+--------------------------------------------------------------------------
+File:   comdi_28ca40ca40_t1000.inp   rho0=0.165      15-Jan-2010
+--------------------------------------------------------------------------
+ILET.....=2                !FLAG 1 (only) INIZ. 2 LEGGE DA FILE     
+NREP.....=1                <eee!was 3,  N. EVENTI COSTRUITI DA UNA STESSA INIZ.
+ibmin ...=0.
+ibmax....=0.
+idb .....=1.
+np.......=74          <<! 40Ca "projectile"
+nt.......=0
+izP......=50
+izt......=0
+eb1... ..=-8.55          <<! ET(1) Exact expt. value here (4-apr-08)
+eb2......=-19.99           ! ET(2) seems not in use
+r0.......=1.2              !RAGGIO EFFETTIVO IN CUI VENGONO DISTRIBITE LE PART.
+TSTAB....=1000.          <<! was 1000 TEMPO DI STABILIZZAZIONE DOPO COOLING
+Nevent...=5000           <<! was 5000 NR DI RICERCHE PER TROVaRE GROUND STATE   
+alfa.....=1.
+gr.......=1.118           <<!sigma_r (was 1.15)
+gk.......=0.447          <<!sigma_p (was 0.435 in orig. file)
+paulm....=102.            <<! 96. (Ca,Ni), 98. Kr, 102. (Sn,Pb)
+ntp......=1                ! NGNUC (#of test particles, set to 1)
+nseed....=10110521791              ! NYFL, when nseed>0, seed; =0, time seed
+zrel.....=20.
+esua.....=28.
+tmaxR....=1000.        !TEMPO MASSIMO DI EVOLUZIONE O DI RICERCA DI INIZ. 
+dt.......=1.           !STEP IN TEMPO INTEGRAZIONE (Intergration time)
+DTPR.....=1000.          !N. STEP PER LA STAMPA INFORMAZIONI   (printing interval)
+dTCOL....=1.        !STEP IN TEMPO COLLISIONE
+tfram....=1000.        !TEMPO DI START PER GUARDARE I FRAMMENTI 
+TMAXI ...=5100.        !IN INIZ. TEMPO RIFE. DAL QUALE FA CECK SU CONF SPAZIALE 
+Ndti.....=1            !N STEP TIME BLOCKING
+TMAXC....=0.         <<!TEMPO DI COOLING (was 450 !!!!)
+tden.....=8000.          !FRAZIONE DI A PER CUI PAULI VIOLA PRIMA DI STABILIZZ.
+dtden....=650.       <<!TEMP DA CUI PUO USCIRE DOP COOLING (cooling time)
+ict......=0            !FLAG COLLISIONI 1: Yes, 0: No(N-N coll. flag, set to NO)
+iprn.....=6            !Nr. FIGURE CON PALLE
+itfram...=40           !N STEP IN TEMPO PER RIEMPIRE HISTOG.  
+icont....=1            !STEP GRAFICO PAULI
+jpmin....=20
+jpmax....=65
+jdel.....=5
+ittt.....=500
+iang.....=500
+idp......=250            !COMPRESSIBIITA, 200, 380, 500,   0: NO MEANFILED
+isig.....=0
+ifull....=1
+icoul....=1              !FLAG COULOMB:  1: with Coulomb, 0: no Coulomb  
+isy......=1            <<!FLAG ASYMMETRIA
+IDA......=0              !N.STEP PARTENZA CECK PAULI
+ITRB.....=1              !FLAG THREE BODY
+ITWB.....=1              !FLAG TWO BODY
+ICTR.....=1.             !FLAG THREE BODY ENERGY  
+TEMP.....=1.             !CIFRA(in migliaia) ID. ISTOGRAMMI
+IFFE.....=0              !0 CALCOLA ENERGIE DI FERMI, 1 ACCETTA VALORI ESTERNI
+EF11.....=26.            !
+EF12.....=22.05          ! ENERGIE DI FERMI   use values from comd.f *inp files
+EF21.....=26.            !
+EF22.....=22.05          !
+RKFF.....=1.             ! MSTAR M RATIO
+RANGE....=2.4           !RANGE IN FM for cluster formation 
+NEVENT0..=1        <eee!NR DI INIZIALIZZA DA SALVARE.NR EVENTO DI STAMPA
+T0.......=0.             !EVENTUALE T0 IN SKYRME ESTERNO
+NKF......=20.             !N STEP IN P PER LA FERMIGAU
+DBOX.....=0.             !LATO BOX IN R PER UNIFORMITA
+IANT.....=1              !FLAG ANTISYMM. 1 SI 0 NO
+ISM......=100            !NON IN USO      
+ITERAM...=3              !NR DI ITERAZIONI IN SCATT PER ANTISIMM.
+ISTARTR..=1
+RMYU.....=0.5            !RAGGIO YUKAWA
+RTYU.....=0.             !VPI
+CSUP.....=-2.002       <<ss!Surface term: -1.(Ca,Ni,Kr), -2.(Sn,Pb)  CSUP= Cs/RHO0
+ALFAP....=1.             !ALFAP RIDUZIONE MOMENTO DI FERMI
+ICORR....=0              !
+----------------------------------------------------------
+'conf_124Sn_c1c2_L72K250_1.dat'   
+'conf.dat'                     ! targ. configuration
+'comd_out'                        ! r,p out distribution file
+'comd_tmax_out'                     ! fragment output at tmaxr
+'comd_dtpr1_out'                 ! fragment output at every dtpr
+'seed_dat'                             ! seed file
+----------------------------------------------------------
+MICRO....=0
+IPRM.....=2
+NEVENTM..=1
+NEVENTR..=1
+NTIME....=1
+IPAULM...=1
+TPREQ....=999.
+RKELV....=0.
+rho0.....=0.181              <<! saturation density, different with initial run
+redc.....=1.
+IZEROM...=50
+RVOL.....=2.5
+-----------------------------------------------------------
+ISYN.....=2        <<!1: hard, 2: standard, 3: soft ESYM
+Csym.....=32.         ! strength of symmetry potential
+-----------------------------------------------------------
+Ievolve..=1                     <<!0: normal running, 1: evolution of nucleus
+gdr0.dat                               !for gemini   For the comd_convert.f 
+NST0.dat                                 !GS file
+igdr.....=0                     ! Root file
+igmr.....=0                      !n, p only, n/p analysis
