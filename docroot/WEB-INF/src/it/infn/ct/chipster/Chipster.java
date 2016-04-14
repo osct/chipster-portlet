@@ -190,7 +190,7 @@ public class Chipster extends GenericPortlet {
             User user = themeDisplay.getUser();
             
             String username = user.getScreenName();
-            String emailAddress = user.getDisplayEmailAddress();
+            //String emailAddress = user.getDisplayEmailAddress();
             Company company = PortalUtil.getCompany(request);
             String gateway = company.getName();
 
@@ -264,7 +264,7 @@ public class Chipster extends GenericPortlet {
                         + "\nSENDER_MAIL: " + SENDER_MAIL
                         + "\nSENDER_ADMIN: " + SENDER_ADMIN);                                
                 
-                String[] CHIPSTER_Parameters = new String [3];                
+                String[] CHIPSTER_Parameters = new String [4];                
 
                 // Upload the input settings for the application
                 CHIPSTER_Parameters = uploadChipsterSettings( request, response, username );
@@ -284,6 +284,7 @@ public class Chipster extends GenericPortlet {
                 log.info("\n\n [ Settings ]");
                 log.info("\n- Input Parameters: ");                
                 log.info("\n- UserID = " + CHIPSTER_Parameters[0]);
+                log.info("\n- Alias = " + CHIPSTER_Parameters[3]);
                 //log.info("\n- Password = " + CHIPSTER_Parameters[1]);
                 log.info("\n- Chipster Front node server = " + chipster_HOST);
                 log.info("\n- Chipster accounting file = " + chipster_ACCOUNT_FILE);
@@ -302,8 +303,12 @@ public class Chipster extends GenericPortlet {
                 String output = ft.format(c.getTime());
                 log.info("Date = " + output);                
                 
+                /*String credential = CHIPSTER_Parameters[0]
+                        + ":" + CHIPSTER_Parameters[1];*/
+                
                 String credential = CHIPSTER_Parameters[0]
-                        + ":" + CHIPSTER_Parameters[1];                                
+                        + ":" + CHIPSTER_Parameters[3]
+                        + ":" + CHIPSTER_Parameters[1];
                                         
                 try {
                     temp = File.createTempFile("file_", ".chipster");
@@ -311,7 +316,7 @@ public class Chipster extends GenericPortlet {
                     
                     // Getting a copy of the remote file
                     doSFTP(CHIPSTER_Parameters, "get", 
-                            chipster_HOST, chipster_ACCOUNT_FILE, null, temp);
+                            chipster_HOST, chipster_ACCOUNT_FILE, null, temp);                    
                     
                     // Checking if the credential is already available
                     if (checkChipsterCredential(temp, CHIPSTER_Parameters[0]))
@@ -497,7 +502,7 @@ public class Chipster extends GenericPortlet {
     public String[] uploadChipsterSettings(ActionRequest actionRequest,
                         ActionResponse actionResponse, String username)
     {
-        String[] CHIPSTER_Parameters = new String [3];
+        String[] CHIPSTER_Parameters = new String [4];
         boolean status;
 
         // Check that we have a file upload request
@@ -541,7 +546,10 @@ public class Chipster extends GenericPortlet {
                         } 
                         
                         if (fieldName.equals("EnableNotification"))
-                                CHIPSTER_Parameters[2]=item.getString();                                                
+                                CHIPSTER_Parameters[2]=item.getString();
+                        
+                        if (fieldName.equals("chipster_alias"))
+                                CHIPSTER_Parameters[3]=item.getString();
                                                 
                     } // end while
             } catch (FileUploadException ex) {
