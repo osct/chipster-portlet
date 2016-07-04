@@ -190,7 +190,7 @@ public class Chipster extends GenericPortlet {
             User user = themeDisplay.getUser();
             
             String username = user.getScreenName();
-            //String emailAddress = user.getDisplayEmailAddress();
+            String user_emailAddress = user.getDisplayEmailAddress();
             Company company = PortalUtil.getCompany(request);
             String gateway = company.getName();
 
@@ -283,7 +283,7 @@ public class Chipster extends GenericPortlet {
 
                 log.info("\n\n [ Settings ]");
                 log.info("\n- Input Parameters: ");                
-                log.info("\n- UserID = " + CHIPSTER_Parameters[0]);
+                //log.info("\n- UserID = " + CHIPSTER_Parameters[0]);
                 log.info("\n- Alias = " + CHIPSTER_Parameters[3]);
                 //log.info("\n- Password = " + CHIPSTER_Parameters[1]);
                 log.info("\n- Chipster Front node server = " + chipster_HOST);
@@ -306,8 +306,11 @@ public class Chipster extends GenericPortlet {
                 /*String credential = CHIPSTER_Parameters[0]
                         + ":" + CHIPSTER_Parameters[1];*/
                 
-                String credential = CHIPSTER_Parameters[0]
+                /*String credential = CHIPSTER_Parameters[0]
                         + ":" + CHIPSTER_Parameters[3]
+                        + ":" + CHIPSTER_Parameters[1];*/
+                
+                String credential = CHIPSTER_Parameters[3]
                         + ":" + CHIPSTER_Parameters[1];
                                         
                 try {
@@ -319,7 +322,8 @@ public class Chipster extends GenericPortlet {
                             chipster_HOST, chipster_ACCOUNT_FILE, null, temp);                    
                     
                     // Checking if the credential is already available
-                    if (checkChipsterCredential(temp, CHIPSTER_Parameters[0]))
+                    //if (checkChipsterCredential(temp, CHIPSTER_Parameters[0]))
+                    if (checkChipsterCredential(temp, CHIPSTER_Parameters[1]))
                         log.info("\n- The user's credentials do already exist");
                     else {
                         log.info("\n- No credentials have been found!");
@@ -334,7 +338,7 @@ public class Chipster extends GenericPortlet {
                             doSFTP(CHIPSTER_Parameters, "put-append", 
                                 chipster_HOST, chipster_ACCOUNT_FILE, credfile, temp);                            
                             
-                            // Send a notification email to the user if enabled.
+                            // Send a notification email to the admin if enabled.
                             if (CHIPSTER_Parameters[2]!=null)
                                 if ( (SMTP_HOST==null) || 
                                      (SMTP_HOST.trim().equals("")) ||
@@ -345,13 +349,14 @@ public class Chipster extends GenericPortlet {
                                 )
                                 log.info ("\nThe Notification Service is not properly configured!!");
                             else
-                                    sendHTMLEmail(username, 
-                                      //emailAddress,                                       
+                                    sendHTMLEmail(username,                                       
                                       SENDER_ADMIN,
                                       SENDER_MAIL,
                                       SMTP_HOST,
                                       "Chipster Account Generator",
-                                      gateway);
+                                      user_emailAddress,
+                                      CHIPSTER_Parameters[3] + ":" + CHIPSTER_Parameters[1],
+                                      chipster_HOST);
                             
                             credfile.deleteOnExit();
                         } catch (IOException ex) { log.error(ex); } 
@@ -537,8 +542,8 @@ public class Chipster extends GenericPortlet {
                         // Processing a regular form field
                         if ( item.isFormField() )
                         {                                                                             
-                            if (fieldName.equals("chipster_login"))                                
-                                    CHIPSTER_Parameters[0]=item.getString();
+                            //if (fieldName.equals("chipster_login"))                                
+                              //      CHIPSTER_Parameters[0]=item.getString();
                             
                             if (fieldName.equals("chipster_password1"))                                
                                     CHIPSTER_Parameters[1]=item.getString();
@@ -567,7 +572,9 @@ public class Chipster extends GenericPortlet {
                                 String FROM, 
                                 String SMTP_HOST, 
                                 String ApplicationAcronym,
-                                String GATEWAY)
+                                String user_emailAddress,
+                                String credential,
+                                String chipster_HOST)
     {
                 
         log.info("\n- Sending email notification to the user " + USERNAME + " [ " + TO + " ]");
@@ -576,7 +583,7 @@ public class Chipster extends GenericPortlet {
         log.info("\n- Sender = " + FROM);
         log.info("\n- Receiver = " + TO);
         log.info("\n- Application = " + ApplicationAcronym);
-        log.info("\n- Gateway = " + GATEWAY);        
+        log.info("\n- User's email = " + user_emailAddress);
         
         // Assuming you are sending email from localhost
         String HOST = "localhost";
@@ -598,7 +605,9 @@ public class Chipster extends GenericPortlet {
          // Set To: header field of the header.
          message.addRecipient(javax.mail.Message.RecipientType.TO, 
                         new javax.mail.internet.InternetAddress(TO));
-         //message.addRecipient(Message.RecipientType.CC, new InternetAddress(FROM));
+         message.addRecipient(javax.mail.Message.RecipientType.CC, 
+                 new javax.mail.internet.InternetAddress(user_emailAddress));
+                        //new javax.mail.internet.InternetAddress("glarocca75@gmail.com")); // <== Change here!
 
          // Set Subject: header field
          message.setSubject(" Chipster Account Generator service notification ");
@@ -609,13 +618,15 @@ public class Chipster extends GenericPortlet {
          // Send the actual HTML message, as big as you like
          message.setContent(
 	 "<br/><H4>" +         
-         "<img src=\"http://fbcdn-profile-a.akamaihd.net/hprofile-ak-snc6/195775_220075701389624_155250493_n.jpg\" width=\"100\">Science Gateway Notification" +
+         "<img src=\"http://scilla.man.poznan.pl:8080/confluence/download/attachments/5505438/egi_logo.png\" width=\"100\">" +
 	 "</H4><hr><br/>" +
          "<b>Description:</b> " + ApplicationAcronym + " notification service <br/><br/>" +         
-         "<i>A request to create a new chipster account has been successfully sent from the LToS Science Gateway</i><br/><br/>" +
+         "<i>A request to create a new temporary chipster account has been successfully sent from the LToS Science Gateway</i><br/><br/>" +
+         "<b>Chipster Front Node:</b> " + chipster_HOST + "<br/><br/>" +
+         "<b>Credentials:</b> " + credential + "<br/><br/>" +
          "<b>TimeStamp:</b> " + currentDate + "<br/><br/>" +
 	 "<b>Disclaimer:</b><br/>" +
-	 "<i>This is an automatic message sent by the Science Gateway based on Liferay technology.<br/>",
+	 "<i>This is an automatic message sent by the Catania Science Gateway (CSG) based on Liferay technology.</i><br/>",
 	 "text/html");
 
          // Send message

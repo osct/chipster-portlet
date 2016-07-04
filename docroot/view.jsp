@@ -263,7 +263,7 @@ If you need any help, please contact the
     
     <tr><td><br/></td></tr>        
     
-    <tr>
+    <!--tr>
         <td width="180">
         <img width="30" 
              align="absmiddle"
@@ -284,7 +284,7 @@ If you need any help, please contact the
                value=<%=username%>                              
                size="33"/>
         </td>           
-    </tr>
+    </tr-->
     
     <tr>
         <td width="180">
@@ -419,7 +419,7 @@ If you need any help, please contact the
 </form>                                                                         
 
 <div id="chipster_footer" style="width:690px; font-family: Tahoma,Verdana,sans-serif,Arial; font-size: 14px;">
-    <div>Chipster Account Generator portlet v0.1.3</div>
+    <div>Chipster Account Generator portlet v0.1.4</div>
     <div>EGI.eu, Amsterdam, The Netherlands</div>    
     <div>Copyright © 2016. All rights reserved</div>        
 </div>               

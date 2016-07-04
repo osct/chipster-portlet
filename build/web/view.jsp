@@ -74,11 +74,15 @@ limitations under the License.
         $("#commentForm").bind('submit', function() 
         {                                
             var flag=true;
+            var flag1=true;
             var strength=0;
             
             // Remove the img and text error (if any)
             $("#error_message img:last-child").remove();
             $("#error_message").empty();
+            
+            // Check alias
+            if ($("#chipster_alias").val() == "") flag1=false;
             
             // Check the password
             if (($("#chipster_password1").val() == "") || 
@@ -88,9 +92,15 @@ limitations under the License.
                 console.log("passwords do not match");
                 flag=false;                        
             }
+            
+            if ((!flag1)) {
+                $('#error_message').append("Alias is empty. Please enter a valid one.");
+                $("#error_message").css({"color":"red","font-size":"14px"});
+                return false;
+            }
                         
             if ((!flag)) {
-                $('#error_message').append("Passwords do not match. Please enter a valid one.");
+                $('#error_message').append("Passwords are empty or do not match. Please enter a valid one.");
                 $("#error_message").css({"color":"red","font-size":"14px"});
                 //return false;
             } else {                
@@ -253,7 +263,7 @@ If you need any help, please contact the
     
     <tr><td><br/></td></tr>        
     
-    <tr>
+    <!--tr>
         <td width="180">
         <img width="30" 
              align="absmiddle"
@@ -272,6 +282,27 @@ If you need any help, please contact the
                       border-color: grey; border-width: 1px; padding-left: 1px;
                       width:330px;"
                value=<%=username%>                              
+               size="33"/>
+        </td>           
+    </tr-->
+    
+    <tr>
+        <td width="180">
+        <img width="30" 
+             align="absmiddle"
+             src="<%= renderRequest.getContextPath()%>/images/question.png" 
+             border="0" title="Alias"/>
+        
+        <label for="chipster_alias">Alias</label>
+        </td>
+        
+        <td width="250">
+        <input type="text"                
+               id="chipster_alias"
+               name="chipster_alias"               
+               style="padding-left: 1px; border-style: solid; 
+                      border-color: grey; border-width: 1px; padding-left: 1px;
+                      width:330px;"                                           
                size="33"/>
         </td>           
     </tr>
@@ -388,7 +419,7 @@ If you need any help, please contact the
 </form>                                                                         
 
 <div id="chipster_footer" style="width:690px; font-family: Tahoma,Verdana,sans-serif,Arial; font-size: 14px;">
-    <div>Chipster Account Generator portlet v0.1.2</div>
+    <div>Chipster Account Generator portlet v0.1.4</div>
     <div>EGI.eu, Amsterdam, The Netherlands</div>    
     <div>Copyright © 2016. All rights reserved</div>        
 </div>               
