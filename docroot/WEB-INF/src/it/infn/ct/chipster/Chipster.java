@@ -1,25 +1,20 @@
 /*
 *************************************************************************
-Copyright (c) 2011-2016:
-Istituto Nazionale di Fisica Nucleare (INFN), Italy
-Consorzio COMETA (COMETA), Italy
+  Copyright 2016 EGI Foundation
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
 
-See http://www.infn.it and and http://www.consorzio-cometa.it for details on
-the copyright holders.
+      http://www.apache.org/licenses/LICENSE-2.0
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
 
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-@author <a href="mailto:giuseppe.larocca@ct.infn.it">Giuseppe La Rocca</a>
+@author <a href="mailto:giuseppe.larocca@egi.eu">Giuseppe La Rocca</a>
 ***************************************************************************
 */
 package it.infn.ct.chipster;
@@ -33,6 +28,8 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpProgressMonitor;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.User;
@@ -125,7 +122,8 @@ public class Chipster extends GenericPortlet {
 
     @Override
     protected void doView(RenderRequest request, RenderResponse response)
-            throws PortletException, IOException {
+            throws PortletException, IOException 
+    {
 
         PortletPreferences portletPreferences =
                 (PortletPreferences) request.getPreferences();
@@ -175,12 +173,14 @@ public class Chipster extends GenericPortlet {
                               ActionResponse response)
                 throws PortletException, IOException 
     {
+        PortletRequestDispatcher dispatcher = null;        
+        
         try 
         {
             String action = "";
             
             File temp = null;
-            File credfile = null;
+            File credfile = null;            
 
             // Getting the action to be processed from the request
             action = request.getParameter("ActionEvent");
@@ -309,8 +309,8 @@ public class Chipster extends GenericPortlet {
                 /*String credential = CHIPSTER_Parameters[0]
                         + ":" + CHIPSTER_Parameters[3]
                         + ":" + CHIPSTER_Parameters[1];*/
-                
-                String credential = CHIPSTER_Parameters[3]
+
+		String credential = CHIPSTER_Parameters[3]
                         + ":" + CHIPSTER_Parameters[1];
                                         
                 try {
@@ -323,10 +323,15 @@ public class Chipster extends GenericPortlet {
                     
                     // Checking if the credential is already available
                     //if (checkChipsterCredential(temp, CHIPSTER_Parameters[0]))
-                    if (checkChipsterCredential(temp, CHIPSTER_Parameters[1]))
-                        log.info("\n- The user's credentials do already exist");
-                    else {
+                    if (checkChipsterCredential(temp, CHIPSTER_Parameters[3], CHIPSTER_Parameters[1])) {
+                        log.info("\n- The user's credentials [ " 
+                                + CHIPSTER_Parameters[3] 
+                                + " ] does already exist");
+                        
+                        SessionErrors.add(request, "user-found");
+                    } else {
                         log.info("\n- No credentials have been found!");
+                                                
                         try {
                             credential += ":" + output;
                             credfile = File.createTempFile("cred_", ".chipster");
@@ -338,7 +343,7 @@ public class Chipster extends GenericPortlet {
                             doSFTP(CHIPSTER_Parameters, "put-append", 
                                 chipster_HOST, chipster_ACCOUNT_FILE, credfile, temp);                            
                             
-                            // Send a notification email to the admin if enabled.
+                            // Send a notification email to the user if enabled.
                             if (CHIPSTER_Parameters[2]!=null)
                                 if ( (SMTP_HOST==null) || 
                                      (SMTP_HOST.trim().equals("")) ||
@@ -349,43 +354,61 @@ public class Chipster extends GenericPortlet {
                                 )
                                 log.info ("\nThe Notification Service is not properly configured!!");
                             else
-                                    sendHTMLEmail(username,                                       
+                                    sendHTMLEmail(username, 
                                       SENDER_ADMIN,
                                       SENDER_MAIL,
                                       SMTP_HOST,
                                       "Chipster Account Generator",
-                                      user_emailAddress,
+				      user_emailAddress,
                                       CHIPSTER_Parameters[3] + ":" + CHIPSTER_Parameters[1],
                                       chipster_HOST);
                             
                             credfile.deleteOnExit();
                         } catch (IOException ex) { log.error(ex); } 
                           finally { credfile.delete(); }
+                        
+                        SessionMessages.add(request, "user-not-found");
                     }
                                         
                     temp.deleteOnExit();
                 } catch (IOException ex) { log.error(ex); } 
-                finally { temp.delete(); }
+                finally { temp.delete(); }                
             } // end PROCESS ACTION [ SUBMIT_CHIPSTER_PORTLET ]
+            
+            // Hide default Liferay success/error messages
+            /*PortletConfig portletConfig = (PortletConfig) request
+                    .getAttribute(JavaConstants.JAVAX_PORTLET_CONFIG);
+
+            LiferayPortletConfig liferayPortletConfig = (LiferayPortletConfig) portletConfig;
+            
+            SessionMessages.add(request, liferayPortletConfig.getPortletName()
+                    + SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE);*/
+                       
+                
         } catch (PortalException ex) {
             Logger.getLogger(Chipster.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SystemException ex) {
             Logger.getLogger(Chipster.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }                
     }
     
-    public boolean checkChipsterCredential (File file, String login)
+    public boolean checkChipsterCredential (File file, String login, String pass)
     {
         BufferedReader br = null;
-        boolean flag = false;                
+        boolean flag = false;
+        
+        String cred = login + ":" + pass;
             
         try {            
             
             String line;
             br = new BufferedReader(new FileReader(file));
 
-            while (((line = br.readLine()) != null) && (!flag))                
-                if (line.contains(login)) flag = true;            
+            while (((line = br.readLine()) != null) && (!flag)) 
+            { 
+                if (line.contains(login)) flag = true;
+                else if (line.contains(cred)) flag = true;
+            }
         } catch (IOException ex) {
             Logger.getLogger(Chipster.class.getName())
                   .log(Level.SEVERE, null, ex);
@@ -543,7 +566,7 @@ public class Chipster extends GenericPortlet {
                         if ( item.isFormField() )
                         {                                                                             
                             //if (fieldName.equals("chipster_login"))                                
-                              //      CHIPSTER_Parameters[0]=item.getString();
+                            //        CHIPSTER_Parameters[0]=item.getString();
                             
                             if (fieldName.equals("chipster_password1"))                                
                                     CHIPSTER_Parameters[1]=item.getString();
@@ -583,14 +606,17 @@ public class Chipster extends GenericPortlet {
         log.info("\n- Sender = " + FROM);
         log.info("\n- Receiver = " + TO);
         log.info("\n- Application = " + ApplicationAcronym);
-        log.info("\n- User's email = " + user_emailAddress);
+        log.info("\n- User's email = " + user_emailAddress);        
         
         // Assuming you are sending email from localhost
         String HOST = "localhost";
         
         // Get system properties
         Properties properties = System.getProperties();
-        properties.setProperty(SMTP_HOST, HOST);
+        properties.setProperty(SMTP_HOST, HOST);        
+        properties.setProperty("mail.debug", "true");
+        
+        //properties.setProperty("mail.smtp.auth", "false");        
         
         // Get the default Session object.
         javax.mail.Session session = javax.mail.Session.getDefaultInstance(properties);
@@ -605,9 +631,9 @@ public class Chipster extends GenericPortlet {
          // Set To: header field of the header.
          message.addRecipient(javax.mail.Message.RecipientType.TO, 
                         new javax.mail.internet.InternetAddress(TO));
-         message.addRecipient(javax.mail.Message.RecipientType.CC, 
+         message.addRecipient(javax.mail.Message.RecipientType.CC,
                  new javax.mail.internet.InternetAddress(user_emailAddress));
-                        //new javax.mail.internet.InternetAddress("glarocca75@gmail.com")); // <== Change here!
+		//new javax.mail.internet.InternetAddress("glarocca75@gmail.com")); // <== Change here!
 
          // Set Subject: header field
          message.setSubject(" Chipster Account Generator service notification ");
@@ -622,11 +648,11 @@ public class Chipster extends GenericPortlet {
 	 "</H4><hr><br/>" +
          "<b>Description:</b> " + ApplicationAcronym + " notification service <br/><br/>" +         
          "<i>A request to create a new temporary chipster account has been successfully sent from the LToS Science Gateway</i><br/><br/>" +
-         "<b>Chipster Front Node:</b> " + chipster_HOST + "<br/><br/>" +
+	 "<b>Chipster Front Node:</b> " + chipster_HOST + "<br/>" +
          "<b>Credentials:</b> " + credential + "<br/><br/>" +
          "<b>TimeStamp:</b> " + currentDate + "<br/><br/>" +
 	 "<b>Disclaimer:</b><br/>" +
-	 "<i>This is an automatic message sent by the Catania Science Gateway (CSG) based on Liferay technology.</i><br/>",
+	 "<i>This is an automatic message sent by the Catania Science Gateway (CSG) tailored for the EGI Long of Tail Science.<br/><br/>",
 	 "text/html");
 
          // Send message
